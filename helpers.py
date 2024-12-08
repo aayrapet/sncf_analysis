@@ -38,26 +38,36 @@ def get_names_geo_data_from_sncf_api(endpoint_suffix, **kwargs):
     df = pd.json_normalize(resulting_dictionnary)
     return df
 
+def gouv_api_addresses(df):
+    
+    """
+    https://adresse.data.gouv.fr/api-doc/adresse
 
-def get_absent_lat_lon_from_gouv_api(df):
-    empties = df[df["lon_gare"].isna()].copy()
-    base_url = "https://api-adresse.data.gouv.fr/search/"
-    # Paramètres de la requête
-    params = {"q": "", "limit": 1}
-    i = 0
-    for idx, row in empties.iterrows():
-        params["q"] = "gare de " + row["nom_gare"]
-        response = requests.get(base_url, params=params)
+    """
+   
+    df=final[["lon_gare","lat_gare","nomcommune"]]
+    regions=[]
+    
+    for idx, row in df.iterrows():
         try:
+            #search by lat lon 
+            base_url="https://api-adresse.data.gouv.fr/reverse/"
+            params = {"lat": row["lat_gare"],"lon":row["lon_gare"], "limit": 1}
+            response = requests.get(base_url, params=params)
             data = response.json()
-            coordinates = data["features"][0]["geometry"]["coordinates"]
-            i = i + 1
-        except:
-            coordinates = [None, None]
-        df.loc[idx, "lon_gare"] = coordinates[0]
-        df.loc[idx, "lat_gare"] = coordinates[1]
-    print(i, "absent addresses filled successfully")
-    return df
+            region=data["features"][0]["properties"]["context"].split(",")[-1].strip()
+           
+        except:  
+            # if not found then search by commune name (not optimal but the only option )         
+            base_url="https://api-adresse.data.gouv.fr/search/" #lat lon could not help, so search by commune name
+            params = {"q":row["nomcommune"], "limit": 1}
+            response = requests.get(base_url, params=params)
+            data = response.json()
+            region=data["features"][0]["properties"]["context"].split(",")[-1].strip()
+           
+        regions.append(region)
+
+    return regions
 
 def delete_outliers_z_score(df, series):
     df["z_score"] = zscore(series)
