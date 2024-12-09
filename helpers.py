@@ -59,26 +59,6 @@ def get_absent_lat_lon_from_gouv_api(df):
     print(i, "absent addresses filled successfully")
     return df
 
-def fill_regional_stat_with_lat_lon(regional_stat):
-
-  base_url = "https://api-adresse.data.gouv.fr/search/"
-  # Paramètres de la requête
-  params = {"q": "", "limit": 1}
-  i = 0
-  for idx, row in tqdm(regional_stat.iterrows(), desc="Processing"):
-   
-     params["q"] = f"{row["nomcommune"]} {row["codecommune"]}"
-     response = requests.get(base_url, params=params)
-     try :
-         data = response.json()
-         coordinates = data["features"][0]["geometry"]["coordinates"]
-         i = i + 1
-     except:
-         coordinates = [None, None]
-     regional_stat.loc[idx, "lon"] = coordinates[0]
-     regional_stat.loc[idx, "lat"] = coordinates[1]
-  return regional_stat
-
 def delete_outliers_z_score(df, series):
     df["z_score"] = zscore(series)
     no_outliers_table = df[df["z_score"].abs() < 3]
