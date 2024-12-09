@@ -52,18 +52,15 @@ def gouv_api_addresses(df):
         try:
             #search by lat lon 
             base_url="https://api-adresse.data.gouv.fr/reverse/"
-            params = {"lat": row["lat_gare"],"lon":row["lon_gare"], "limit": 1}
-            response = requests.get(base_url, params=params)
-            data = response.json()
-            region=data["features"][0]["properties"]["context"].split(",")[-1].strip()
-           
+            params = {"lat": row["lat_gare"],"lon":row["lon_gare"], "limit": 1} 
         except:  
             # if not found then search by commune name (not optimal but the only option )         
             base_url="https://api-adresse.data.gouv.fr/search/" #lat lon could not help, so search by commune name
             params = {"q":row["nomcommune"], "limit": 1}
-            response = requests.get(base_url, params=params)
-            data = response.json()
-            region=data["features"][0]["properties"]["context"].split(",")[-1].strip()
+        
+        response = requests.get(base_url, params=params)
+        data = response.json()
+        region=data["features"][0]["properties"]["context"].split(",")[-1].strip()
            
         regions.append(region)
 
@@ -78,16 +75,6 @@ def delete_outliers_z_score(df, series):
     return no_outliers_table
 
 
-def plot_hist(series, title_suffix=""):
-
-    plt.figure(figsize=(3, 2))
-    plt.hist(series, bins=50, edgecolor="black")
-    plt.title(f"Histogram of {series.name} {title_suffix}", fontsize=14)
-    plt.xlabel(series.name, fontsize=12)
-    plt.ylabel("Frequency", fontsize=12)
-    plt.grid(axis="y", linestyle="--")
-    plt.show()
-
 
 def simple_plot_map(lat,lon):
     plt.scatter(lon, lat, s=1, color="black")
@@ -95,6 +82,88 @@ def simple_plot_map(lat,lon):
     plt.xlabel("Longitude")
     plt.ylabel("Latitude")
     plt.show()
+
+
+
+def calculate(
+    df: pd.DataFrame,
+    group,
+    fields,
+    stats,
+    names
+) -> pd.DataFrame:
+    
+    """
+    "Group by" operation on multiple fields and aggregate functions, the code becomes easier than standard pandas writing
+
+    Args:
+        df (DataFrame): DataFrame
+        group : Aggregation column/columns
+        fields: Calculation column/columns, on which aggregation function will be applied
+        stats: Function/functions applied on fields
+        names: Column name/names of new calculated columns
+
+    Returns:
+        DataFrame: Aggregated DataFrame by columns "group", with functions defined in "stats" on columns defined in "fields"
+
+    Example:
+        'Calculate number of clients by boutique
+        calculate(my_dataframe,group=["boutique_name"],fields=["individuid"],stats=["nunique"],names=["nb_of_clients"])
+
+        'Calculate number of clients by boutique, TO, nb of visits
+        calculate(my_dataframe,group=["boutique_name","fsh_advisor"],fields=["individuid","price","purchase_date"],stats=["nunique","sum","nunique"],names=["nb_of_clients","Turnover","nb_of_visits])
+    https://github.com/florazhg/NLP-Project/blob/main/main_nb_w_topic.ipynb
+    
+    """
+
+    no_names_introduced=False
+    if names is None:
+        no_names_introduced=True
+        names = fields
+    table = None
+
+    #calculer pour chaque couple des variables et statistiques 
+    #une des limites: ne pas utiliser les mêmes variables dans groupe et field
+    for field, stat,name in zip(fields, stats,names):
+        if name==None or no_names_introduced:
+            name=f"{field}_{stat}"
+   
+        v = (
+            df.groupby(group)[field]
+            .agg(stat)
+            .reset_index()
+            .rename(columns={field: name})
+        )
+
+        if table is None:
+            table = v
+        else:
+            table = table.merge(v, on=group, how="left")
+
+    return table
+
+
+def plot_hist(ax, series, title_suffix=""):
+    ax.hist(series, bins=50, edgecolor="black")
+    ax.set_title(f" {series.name} {title_suffix}", fontsize=14)
+    ax.set_xlabel(series.name, )
+    ax.set_ylabel("Frequency", )
+    ax.grid(axis="y", linestyle="--")
+
+def plot_map_with_legend(ax, lon, lat, categorical_continuos,suffix_description):
+   scatter = ax.scatter(
+       lon, 
+       lat, 
+       s=10,  # Increase size for visibility
+       c=categorical_continuos,  # Color based on number of passengers
+       cmap='viridis_r'  # Use a perceptible color map
+   )
+   cbar = plt.colorbar(scatter, ax=ax)  # Add color legend
+   cbar.set_label(suffix_description)
+   ax.set_title("Stations by "+suffix_description)
+   ax.set_xlabel("Longitude")
+   ax.set_ylabel("Latitude") 
+
 
 
 class s3_connection():
