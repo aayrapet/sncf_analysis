@@ -187,7 +187,12 @@ class s3_connection():
         with self.s3.open(directory, "rb") as file_in:
           df = pd.read_parquet(file_in)
         return df
-      
+    
+    def read_csv_from_s3(self, directory, columns_to_select=None, dtype_spec=None):
+        with self.s3.open(directory, "rb") as file_in:
+            df = pd.read_csv(file_in, usecols=columns_to_select, dtype=dtype_spec)
+    
+        return df
      
     
 
