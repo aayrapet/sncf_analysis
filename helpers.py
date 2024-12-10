@@ -1,9 +1,7 @@
 import requests
 import pandas as pd
 import numpy as np 
-from pyarrow import fs
-import pyarrow as pa
-import pyarrow.parquet as pq
+import s3fs
 from scipy.stats import zscore
 import matplotlib.pyplot as plt
 from tqdm import tqdm
@@ -38,14 +36,14 @@ def get_names_geo_data_from_sncf_api(endpoint_suffix, **kwargs):
     df = pd.json_normalize(resulting_dictionnary)
     return df
 
-def gouv_api_addresses(df):
+def gouv_api_addresses(data):
     
     """
     https://adresse.data.gouv.fr/api-doc/adresse
 
     """
    
-    df=final[["lon_gare","lat_gare","nomcommune"]]
+    df=data[["lon_gare","lat_gare","nomcommune"]].copy()
     regions=[]
     
     for idx, row in df.iterrows():
@@ -53,14 +51,17 @@ def gouv_api_addresses(df):
             #search by lat lon 
             base_url="https://api-adresse.data.gouv.fr/reverse/"
             params = {"lat": row["lat_gare"],"lon":row["lon_gare"], "limit": 1} 
+            response = requests.get(base_url, params=params)
+            data = response.json()
+            region=data["features"][0]["properties"]["context"].split(",")[-1].strip()
         except:  
             # if not found then search by commune name (not optimal but the only option )         
             base_url="https://api-adresse.data.gouv.fr/search/" #lat lon could not help, so search by commune name
             params = {"q":row["nomcommune"], "limit": 1}
         
-        response = requests.get(base_url, params=params)
-        data = response.json()
-        region=data["features"][0]["properties"]["context"].split(",")[-1].strip()
+            response = requests.get(base_url, params=params)
+            data = response.json()
+            region=data["features"][0]["properties"]["context"].split(",")[-1].strip()
            
         regions.append(region)
 
@@ -167,27 +168,27 @@ def plot_map_with_legend(ax, lon, lat, categorical_continuos,suffix_description)
 
 
 class s3_connection():
-    def __init__(self,directory):
+    def __init__(self):
         try:
-         s3 = fs.S3FileSystem(endpoint_override="https://" + "minio.lab.sspcloud.fr")
-         s3.get_file_info(fs.FileSelector(directory, recursive=True))
+         s3 = s3fs.S3FileSystem(client_kwargs={"endpoint_url": "https://minio.lab.sspcloud.fr"})
+         
          print("connection successful")
         except:
          s3="connection not established, debug "
          print(s3)
         self.s3=s3
-     
-    def from_json_to_parquet_store_in_s3(self,json_table, directory):
-      table = pa.Table.from_pylist(json_table)
-      pq.write_table(table, directory, filesystem=self.s3)
-  
+    
     def from_pandas_to_parquet_store_in_s3(self,df, directory):
-      table = pa.Table.from_pandas(df)
-      pq.write_table(table, directory, filesystem=self.s3)
-   
+      with self.s3.open(directory, "wb") as file_out:
+        df.to_parquet(file_out)
+      
+    
     def get_tables_from_s3(self,directory):
-        df = pq.ParquetDataset(directory, filesystem=self.s3).read_pandas().to_pandas()
+        with self.s3.open(directory, "rb") as file_in:
+          df = pd.read_parquet(file_in)
         return df
+      
+     
     
 
 def haversine_vectorized(lat1, lon1, lat2, lon2):
