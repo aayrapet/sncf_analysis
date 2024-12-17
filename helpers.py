@@ -179,8 +179,11 @@ class s3_connection():
         self.s3=s3
     
     def from_pandas_to_parquet_store_in_s3(self,df, directory):
-      with self.s3.open(directory, "wb") as file_out:
-        df.to_parquet(file_out)
+      try:
+        with self.s3.open(directory, "wb") as file_out:
+         df.to_parquet(file_out)
+      except: 
+        print("Cher lecteur, cette fonction écrit dans le dossier spécifié, mais vous n'avez pas les droits :( ")
       
     
     def get_tables_from_s3(self,directory):
