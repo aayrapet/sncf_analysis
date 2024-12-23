@@ -86,49 +86,19 @@ def simple_plot_map(lat,lon):
 
 
 
-def calculate(
-    df: pd.DataFrame,
-    group,
-    fields,
-    stats,
-    names
-) -> pd.DataFrame:
-    
-    """
-    "Group by" operation on multiple fields and aggregate functions, the code becomes easier than standard pandas writing
+def calculate(df: pd.DataFrame, group, fields_stats_names) -> pd.DataFrame:
 
-    Args:
-        df (DataFrame): DataFrame
-        group : Aggregation column/columns
-        fields: Calculation column/columns, on which aggregation function will be applied
-        stats: Function/functions applied on fields
-        names: Column name/names of new calculated columns
-
-    Returns:
-        DataFrame: Aggregated DataFrame by columns "group", with functions defined in "stats" on columns defined in "fields"
-
-    Example:
-        'Calculate number of clients by boutique
-        calculate(my_dataframe,group=["boutique_name"],fields=["individuid"],stats=["nunique"],names=["nb_of_clients"])
-
-        'Calculate number of clients by boutique, TO, nb of visits
-        calculate(my_dataframe,group=["boutique_name","fsh_advisor"],fields=["individuid","price","purchase_date"],stats=["nunique","sum","nunique"],names=["nb_of_clients","Turnover","nb_of_visits])
-    https://github.com/florazhg/NLP-Project/blob/main/main_nb_w_topic.ipynb
-    
-    """
-
-    no_names_introduced=False
-    if names is None:
-        no_names_introduced=True
-        names = fields
     table = None
 
-    #calculer pour chaque couple des variables et statistiques 
-    #une des limites: ne pas utiliser les mêmes variables dans groupe et field
-    for field, stat,name in zip(fields, stats,names):
-        if name==None or no_names_introduced:
-            name=f"{field}_{stat}"
-   
+    # calculer pour chaque couple des variables et statistiques
+    # une des limites: ne pas utiliser les mêmes variables dans groupe et field
+    for field_stat_name in fields_stats_names:
+        field, stat = field_stat_name[0], field_stat_name[1]
+        try:
+            name = field_stat_name[2]
+        except:
+            name = f"{field}_{stat}"
+
         v = (
             df.groupby(group)[field]
             .agg(stat)
@@ -164,6 +134,27 @@ def plot_map_with_legend(ax, lon, lat, categorical_continuos,suffix_description)
    ax.set_title("Stations by "+suffix_description)
    ax.set_xlabel("Longitude")
    ax.set_ylabel("Latitude") 
+
+def plot_square_map(lat,lon,fields_names, nb_axis=3, figsize=(28, 28)):
+    fig, axs = plt.subplots(nb_axis, nb_axis, figsize=figsize) 
+    axs = axs.flatten()  # Flatten for easier iteration
+    for idx, el in enumerate(fields_names):
+        field = el[0]
+        name = el[1]
+        ax = axs[idx]  # Select the correct subplot
+        #use another function
+        plot_map_with_legend(
+            ax,
+            lon,
+            lat,
+            field,
+            suffix_description=name,
+        )
+    #delete duplicated legends
+    for ax in axs[len(fields_names):]:
+        ax.axis("off") 
+    plt.show()
+
 
 
 
