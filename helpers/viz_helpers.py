@@ -16,22 +16,6 @@ def simple_plot_map(lat,lon):
     plt.show()
 
 
-
-def plot_hist(ax, series, title_suffix=""):
-    ax.hist(series, bins=50, edgecolor="black")
-    ax.set_title(f" {series.name} {title_suffix}", fontsize=14)
-    # ax.set_xlabel(series.name, )
-    ax.set_ylabel("Frequency", )
-    ax.grid(axis="y", linestyle="--")
-
-def plot_scatter(ax, x_series, y_series, color='blue', alpha=0.7, edgecolor='k'):
-
-    ax.scatter(x_series, y_series, color=color, edgecolor=edgecolor, alpha=alpha)
-    
-    ax.set_xlabel(x_series.name)
-    ax.set_ylabel(y_series.name)
-    ax.grid(True, linestyle="--", alpha=0.5)
-
 def corr_matrix(df,filter_include=None,filter_exclude=None,figsize=(10,6)):
   numeric_columns = df.select_dtypes(include=[np.number])
   if filter_exclude:
@@ -61,42 +45,6 @@ def corr_matrix(df,filter_include=None,filter_exclude=None,figsize=(10,6)):
   plt.show()
 
 
-
-def plot_map_with_legend(ax, lon, lat, categorical_continuos,suffix_description):
-   scatter = ax.scatter(
-       lon, 
-       lat, 
-       s=10,  # Increase size for visibility
-       c=categorical_continuos,  # Color based on number of passengers
-       cmap='viridis_r'  # Use a perceptible color map
-   )
-   cbar = plt.colorbar(scatter, ax=ax)  # Add color legend
-   cbar.set_label(suffix_description)
-   ax.set_title("Stations by "+suffix_description)
-   ax.set_xlabel("Longitude")
-   ax.set_ylabel("Latitude") 
-
-def plot_square_map(lat,lon,fields_names,  figsize=(28, 28)):
-    len_fields=len(fields_names)
-    nb_axis=int(np.ceil(len_fields / 3))#i want 3 columns in every row
-    fig, axs = plt.subplots(nb_axis, 3, figsize=figsize) 
-    axs = axs.flatten()  # Flatten for easier iteration
-    for idx, el in enumerate(fields_names):
-        field = el[0]
-        name = el[1]
-        ax = axs[idx]  # Select the correct subplot
-        #use another function
-        plot_map_with_legend(
-            ax,
-            lon,
-            lat,
-            field,
-            suffix_description=name,
-        )
-    #delete duplicated legends
-    for ax in axs[len(fields_names):]:
-        ax.axis("off") 
-    plt.show()
 
 
 def analysis_between_continous_and_categorical_var(df,category_var,interest_var,figsize=(12, 6)):
@@ -154,22 +102,99 @@ def analysis_between_continous_and_categorical_var(df,category_var,interest_var,
 
    
 
+def plot_hist(ax, series, title_suffix=""):
+    ax.hist(series, bins=50, edgecolor="black")
+    ax.set_title(f"{series.name} {title_suffix}", fontsize=14)
+    ax.set_ylabel("Frequency")
+    ax.grid(axis="y", linestyle="--")
 
-def plot_square_scatter(fields_names,  figsize=(28, 7)):
-    len_fields=len(fields_names)
-    nb_axis=int(np.ceil(len_fields / 2))#i want 3 columns in every row
-    fig, axs = plt.subplots(nb_axis, 2, figsize=figsize)
+def plot_scatter(ax, x_series, y_series, color='blue', alpha=0.7, edgecolor='k'):
+    ax.scatter(x_series, y_series, color=color, edgecolor=edgecolor, alpha=alpha)
+    ax.set_xlabel(x_series.name)
+    ax.set_ylabel(y_series.name)
+    ax.grid(True, linestyle="--", alpha=0.5)
+
+def plot_map_with_legend(ax, lon, lat, categorical_continuos, suffix_description):
+    scatter = ax.scatter(
+        lon, 
+        lat, 
+        s=10,  
+        c=categorical_continuos,  
+        cmap='viridis_r'  
+    )
+    cbar = plt.colorbar(scatter, ax=ax)  
+    cbar.set_label(suffix_description)
+    ax.set_title(f"Stations by {suffix_description}")
+    ax.set_xlabel("Longitude")
+    ax.set_ylabel("Latitude")
+
+
+def plot_square(
+    fields_names,
+    plot_type="hist",
+    figsize=(13, 7),
+    columns=3,
+    lat=None,
+    lon=None,
+):
+    """
+    Une fonction unifiée pour créer une grille de sous-graphiques et appeler
+    la fonction de traçage appropriée (histogramme/nuage de points/carte) en fonction de plot_type.
+
+    Paramètres
+    ----------
+    fields_names : list
+        - Pour plot_type="hist":
+            Chaque élément : [série, suffixe_titre (optionnel)]
+        - Pour plot_type="scatter":
+            Chaque élément : [x_series, y_series]
+        - Pour plot_type="map":
+            Chaque élément : [catégorique_continu, description_suffixe]
+    plot_type : str
+        Une des options {"hist", "scatter", "map"}.
+    figsize : tuple
+        Taille de la figure transmise à plt.subplots.
+    columns : int
+        Nombre de colonnes dans chaque ligne de la figure.
+    lat : array-like
+        Valeurs de latitude (utilisé uniquement si plot_type="map").
+    lon : array-like
+        Valeurs de longitude (utilisé uniquement si plot_type="map").
+"""
+
+    len_fields = len(fields_names)
+    nb_axis = int(np.ceil(len_fields / columns))
+
+    fig, axs = plt.subplots(nb_axis, columns, figsize=figsize)
     axs = axs.flatten()  # Flatten for easier iteration
+
     for idx, el in enumerate(fields_names):
-        x_series = el[0]
-        y_series = el[1]
-        ax = axs[idx]  # Select the correct subplot
-        #use another function
-        plot_scatter(
-            ax=ax,
-            x_series=x_series, y_series=y_series,
-        )
-    #delete duplicated legends
-    for ax in axs[len(fields_names):]:
-        ax.axis("off") 
+        ax = axs[idx]
+        
+        if plot_type == "hist":
+            series = el[0]
+            # optional second argument for a custom title suffix
+            title_suffix = el[1] if len(el) > 1 else ""
+            plot_hist(ax, series, title_suffix=title_suffix)
+
+        elif plot_type == "scatter":
+            x_series = el[0]
+            y_series = el[1]
+            plot_scatter(ax, x_series, y_series)
+
+        elif plot_type == "map":
+            if lat is None or lon is None:
+                raise ValueError("lat and lon must be provided for plot_type='map'")
+            field = el[0]
+            suffix_description = el[1]
+            plot_map_with_legend(ax, lon, lat, field, suffix_description)
+
+        else:
+            raise ValueError(f"Unknown plot_type: '{plot_type}'")
+
+    # Turn off unused subplots (if any)
+    for ax in axs[len_fields:]:
+        ax.axis("off")
+
+    plt.tight_layout()
     plt.show()
