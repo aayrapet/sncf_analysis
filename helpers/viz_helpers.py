@@ -153,3 +153,23 @@ def analysis_between_continous_and_categorical_var(df,category_var,interest_var,
    print(nb_couples," combinaisons des catégories sont significativement différentes")
 
    
+
+
+def plot_square_scatter(fields_names,  figsize=(28, 7)):
+    len_fields=len(fields_names)
+    nb_axis=int(np.ceil(len_fields / 2))#i want 3 columns in every row
+    fig, axs = plt.subplots(nb_axis, 2, figsize=figsize)
+    axs = axs.flatten()  # Flatten for easier iteration
+    for idx, el in enumerate(fields_names):
+        x_series = el[0]
+        y_series = el[1]
+        ax = axs[idx]  # Select the correct subplot
+        #use another function
+        plot_scatter(
+            ax=ax,
+            x_series=x_series, y_series=y_series,
+        )
+    #delete duplicated legends
+    for ax in axs[len(fields_names):]:
+        ax.axis("off") 
+    plt.show()
