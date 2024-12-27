@@ -23,7 +23,7 @@ def plot_hist(ax, series, title_suffix=""):
 def plot_scatter(ax, x_series, y_series, color='blue', alpha=0.7, edgecolor='k'):
 
     ax.scatter(x_series, y_series, color=color, edgecolor=edgecolor, alpha=alpha)
-    ax.set_title(f"{y_series.name} vs {x_series.name}", fontsize=14)
+    
     ax.set_xlabel(x_series.name)
     ax.set_ylabel(y_series.name)
     ax.grid(True, linestyle="--", alpha=0.5)
@@ -72,8 +72,10 @@ def plot_map_with_legend(ax, lon, lat, categorical_continuos,suffix_description)
    ax.set_xlabel("Longitude")
    ax.set_ylabel("Latitude") 
 
-def plot_square_map(lat,lon,fields_names, nb_axis=3, figsize=(28, 28)):
-    fig, axs = plt.subplots(nb_axis, nb_axis, figsize=figsize) 
+def plot_square_map(lat,lon,fields_names,  figsize=(28, 28)):
+    len_fields=len(fields_names)
+    nb_axis=int(np.ceil(len_fields / 3))#i want 3 columns in every row
+    fig, axs = plt.subplots(nb_axis, 3, figsize=figsize) 
     axs = axs.flatten()  # Flatten for easier iteration
     for idx, el in enumerate(fields_names):
         field = el[0]
