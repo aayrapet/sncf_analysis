@@ -2,9 +2,13 @@ import pandas as pd
 import numpy as np 
 import seaborn as sns
 import matplotlib.pyplot as plt
+from statsmodels.stats.multicomp import pairwise_tukeyhsd
+from scipy.stats import f_oneway
 
 
 def simple_plot_map(lat,lon):
+    """
+    """
     plt.scatter(lon, lat, s=1, color="black")
     plt.title("Stations in France")
     plt.xlabel("Longitude")
@@ -16,7 +20,7 @@ def simple_plot_map(lat,lon):
 def plot_hist(ax, series, title_suffix=""):
     ax.hist(series, bins=50, edgecolor="black")
     ax.set_title(f" {series.name} {title_suffix}", fontsize=14)
-    ax.set_xlabel(series.name, )
+    # ax.set_xlabel(series.name, )
     ax.set_ylabel("Frequency", )
     ax.grid(axis="y", linestyle="--")
 
@@ -93,3 +97,59 @@ def plot_square_map(lat,lon,fields_names,  figsize=(28, 28)):
     for ax in axs[len(fields_names):]:
         ax.axis("off") 
     plt.show()
+
+
+def analysis_between_continous_and_categorical_var(df,category_var,interest_var,figsize=(12, 6)):
+   #---------------VIZ PART--------------------------
+   #-------------------------------
+   plt.figure(figsize=figsize)  # Adjust figure size
+   sns.boxplot(
+       data=df,
+       x=category_var  ,               # Your DataFrame
+       hue=category_var, 
+                     # Categorical variable
+       y=interest_var,  # Continuous variable
+       palette='Set2'   ,
+       legend=False          # Optional: Color palette
+   )
+   
+   # Rotate x-axis labels for better visibility
+   plt.xticks(rotation=45)
+   plt.title("Box Plot of Total Voyagers by Region")
+   plt.xlabel("Regions")
+   plt.ylabel("Total Voyagers (2022)")
+   
+   plt.tight_layout()
+   plt.show()
+
+   #---------------ANOVA TEST--------------------------
+   #-------------------------------
+
+   #cette partie suppose les données normales
+
+   #filtrer par catégorie et extraire pour chaque catégorie le nb de voyageurs
+   groups = [table[interest_var].values for region_filter, table in df.groupby(category_var)]
+   #faire anova avec *, car c'est un requis de la fonction (args) 
+   f_stat, p_value = f_oneway(*groups)
+   print(f"P-value: {p_value:.4f}")
+      
+   if p_value < 0.05:
+       print("Rejeter l'hypothèse nulle : Au moins une moyenne de groupe est différente.")
+   else:
+       print("Ne pas rejeter l'hypothèse nulle : Les moyennes des groupes ne sont pas significativement différente")
+   print("-----------------------------------------")
+
+   #---------------TUCKEY POST HOC TEST--------------------------
+   #-------------------------------
+
+
+   tukey = pairwise_tukeyhsd(endog=df[interest_var], groups=df[category_var], alpha=0.05)
+   #supprimer les colonnes redondantes et avoir une belle table data frame
+   tukey_summary = pd.DataFrame(
+       data=tukey._results_table.data[1:],
+       columns=tukey._results_table.data[0]  
+   ) 
+   nb_couples=tukey_summary[tukey_summary['reject'] == True].shape[0]
+   print(nb_couples," combinaisons des catégories sont significativement différentes")
+
+   
