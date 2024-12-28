@@ -59,7 +59,7 @@ Enfin, nous avons repris la carte de France avec les points représentant les ga
 
 Avec ces données, nous commençons à percevoir un lien entre revenu de la commune et la fréquentation des gares, mais est-ce réellement le cas ? Pour répondre à la question, nous utilisons le modèle de régression linéaire des moindres carrés ordinaires. 
 
-En introduisant les variables socio-économiques, du taux de diplôme par commune et de la population de la commune, le revenu n'est plus statistiquement significatif. En revanche les catégories socio-professionnelles le sont. On peut aussi en déduire qu'il existe un lien positif entre la distance de la gare la plus proche et le nombre de voyageurs d'une gare donnée, ce qui semble confirmer notre hypothèse : une gare située plus loin attire davantage de voyageurs. 
+En introduisant les variables socio-économiques, du taux de diplôme par commune et de la population de la commune,les catégories socio-professionnelles  sont statistiquement significatifs. On peut aussi en déduire qu'il existe un lien positif entre la distance de la gare la plus proche et le nombre de voyageurs d'une gare donnée, ce qui semble confirmer notre hypothèse : une gare située plus loin attire davantage de voyageurs. 
 
 Le modèle présente néanmoins des failles. Il existe d'autres variables qui peuvent avoir un effet sur la fréquentation des gares, telles que la densité de population ou le nombre de train qui passent par jour par exemple. Ces données pourraient êtres estimées mais elles ne le sont pas dans ce projet. Les données de fréquentation des gares sont des données agrégées et cachent les différences au sein des types de trains qui y sont pris (TGV, Intercités, TER). Ce ne sont pas les mêmes personnes qui prennent le TER et le TGV. Il est donc difficile d'en déduire un modèle causal, il faudrait pour cela rajouter des variables. 
 
@@ -68,7 +68,7 @@ Le modèle présente néanmoins des failles. Il existe d'autres variables qui pe
 Ouvrez le terminal et tapez:
 ```bash
 
-cd sncf_analysis
+cd sncf_analysis/
 pip install -r requirements.txt
 
 ```
