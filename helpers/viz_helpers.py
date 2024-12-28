@@ -8,6 +8,7 @@ from scipy.stats import f_oneway
 
 def simple_plot_map(lat,lon):
     """
+    plot les gares sur la carte juste 
     """
     plt.scatter(lon, lat, s=1, color="black")
     plt.title("Stations in France")
@@ -17,6 +18,9 @@ def simple_plot_map(lat,lon):
 
 
 def corr_matrix(df,filter_include=None,filter_exclude=None,figsize=(10,6)):
+  """
+  plot matrice de correlation pearson entre les variables continues
+  """
   numeric_columns = df.select_dtypes(include=[np.number])
   if filter_exclude:
     numeric_columns=numeric_columns.drop(filter_exclude,axis=1)
@@ -48,6 +52,10 @@ def corr_matrix(df,filter_include=None,filter_exclude=None,figsize=(10,6)):
 
 
 def analysis_between_continous_and_categorical_var(df,category_var,interest_var,figsize=(12, 6)):
+
+   """
+   plot boxplot, faire anova, tukey
+   """
    #---------------VIZ PART--------------------------
    #-------------------------------
    plt.figure(figsize=figsize)  # Adjust figure size
@@ -103,18 +111,31 @@ def analysis_between_continous_and_categorical_var(df,category_var,interest_var,
    
 
 def plot_hist(ax, series, title_suffix=""):
+
+    """ 
+    pour une axe plot hist
+
+    """
     ax.hist(series, bins=50, edgecolor="black")
     ax.set_title(f"{series.name} {title_suffix}", fontsize=14)
     ax.set_ylabel("Frequency")
     ax.grid(axis="y", linestyle="--")
 
 def plot_scatter(ax, x_series, y_series, color='blue', alpha=0.7, edgecolor='k'):
+    """ 
+    pour une axe plot scatter
+
+    """
     ax.scatter(x_series, y_series, color=color, edgecolor=edgecolor, alpha=alpha)
     ax.set_xlabel(x_series.name)
     ax.set_ylabel(y_series.name)
     ax.grid(True, linestyle="--", alpha=0.5)
 
 def plot_map_with_legend(ax, lon, lat, categorical_continuos, suffix_description):
+    """ 
+    pour une axe plot map
+
+    """
     scatter = ax.scatter(
         lon, 
         lat, 
@@ -173,12 +194,14 @@ def plot_square(
         
         if plot_type == "hist":
             series = el[0]
-            # optional second argument for a custom title suffix
+            #juste pour le suffix custom s'assurer que bien present
             title_suffix = el[1] if len(el) > 1 else ""
-            plot_hist(ax, series, title_suffix=title_suffix)
+
+
+            plot_hist(ax, series, title_suffix=title_suffix)##
 
         elif plot_type == "scatter":
-            x_series = el[0]
+            x_series = el[0]#
             y_series = el[1]
             plot_scatter(ax, x_series, y_series)
 
@@ -192,7 +215,7 @@ def plot_square(
         else:
             raise ValueError(f"Unknown plot_type: '{plot_type}'")
 
-    # Turn off unused subplots (if any)
+    #il faut dedupliquer les legendes
     for ax in axs[len_fields:]:
         ax.axis("off")
 

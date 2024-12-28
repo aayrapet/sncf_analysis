@@ -9,6 +9,10 @@ import statsmodels.api as sm
 
 
 def delete_outliers_z_score(df, series):
+
+    """
+    calculer sur series le zscore est dire si c'est oulier
+    """
     df["z_score"] = zscore(series)
     #assuming normal distribution so series have to be in log !!
     no_outliers_table = df[df["z_score"].abs() < 3]
@@ -47,6 +51,9 @@ def calculate(df: pd.DataFrame, group, fields_stats_names) -> pd.DataFrame:
 
 class s3_connection():
     def __init__(self):
+        """
+        établir la connexion et après utiliser les fonction de read et write 
+        """
         try:
          s3 = s3fs.S3FileSystem(client_kwargs={"endpoint_url": "https://minio.lab.sspcloud.fr"})
          
@@ -65,6 +72,7 @@ class s3_connection():
       
     
     def get_tables_from_s3(self,directory):
+        
         with self.s3.open(directory, "rb") as file_in:
           df = pd.read_parquet(file_in)
         return df

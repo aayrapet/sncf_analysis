@@ -8,11 +8,11 @@ def get_names_geo_data_from_sncf_api(endpoint_suffix, **kwargs):
     endpoint = f"/api/explore/v2.1/catalog/datasets/{endpoint_suffix}/records"
     # Parameters for the API request
     params = {
-        "limit": 100,  # in this API maximum limit is 100
-        "offset": 0,  # we start from 0 to 100, then FROM 100 to 200 etc etc, but limit is fixed at 100, it is moving
+        "limit": 100,  #in this API maximum limit is 100
+        "offset": 0,  #we start from 0 to 100, then FROM 100 to 200 etc etc, but limit is fixed at 100, it is moving
     }
     params.update(kwargs)
-    # Construct the full URL
+    #Construct the full URL
     url = f"{base_url}{endpoint}"
     response = requests.get(url, params=params)
     wb = response.json()
