@@ -68,6 +68,7 @@ Le modèle présente néanmoins des failles. Il existe d'autres variables qui pe
 Ouvrez le terminal et tapez:
 ```bash
 
+git clone https://github.com/aayrapet/sncf_analysis.git
 cd sncf_analysis/
 pip install -r requirements.txt
 
