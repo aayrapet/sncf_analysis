@@ -180,7 +180,9 @@ def stepwise_selection(
 
         x=np.array(x)
         y=np.array(y)
-        v = np.random.permutation(x.shape[1])
+        
+        rng = np.random.default_rng(seed=42)
+        v = rng.permutation(x.shape[1])
         split_index = mt.floor(x.shape[1] / 2)
         index = v[0:split_index]
         remaining_index = v[split_index:]
