@@ -13,9 +13,30 @@ Notre projet se décompose en 3 parties :
 - Visualisation des données 
 - Le modèle
 
-Les packages utilisés sont mentionnés dans le fichier "helpers.py".
 
-## 1. Extraction des données
+
+Avant de parler des étapes, voici comment ce projet est structuré:
+
+# Arborescence du projet `sncf_analysis`
+
+```plaintext
+sncf_analysis/
+├── helpers/                   # Dossier contenant des scripts utilitaires
+│   ├── api_helpers.py         ← Scripts utilitaires pour gérer les appels à des APIs
+│   ├── other_helpers.py       ← Scripts utilitaires divers pour des tâches spécifiques
+│   ├── viz_helpers.py         ← Scripts utilitaires pour la visualisation des données
+│   
+├── .gitignore                 ← Fichier pour exclure certains fichiers du contrôle de version Git
+├── INTERM_data_prep.ipynb     ← Notebook pour la préparation et appel aux API INTERMEDIAIRE des données
+├── LICENSE                    ← Informations sur la licence du projet
+├── main.ipynb                 ← Notebook PRINCIPAL pour l'analyse
+├── README.md                  ← Documentation du projet
+├── requirements.txt           ← Liste des dépendances du projet
+
+
+```
+
+## 1. Extraction des données (fichier `INTERM_data_prep.ipynb`)
 
 Les données ont été recueillies à partir des API de la SNCF afin d'extraire les données de localisation des communes et des fréquentations des gares SNCF.
 
@@ -26,7 +47,7 @@ Une fois ces données extraites, on les fusionne avec les données communales re
 
 Attention ! Certaines lignes consistent à exporter des tables, seules la personnes qui détient le bucket peut écrire, cette étape a été faite au préalable pour obtenir la table finale.
 
-## 2. Visualisation des données
+## 2. Visualisation des données (fichier `main.ipynb`)
 
 La visualisation consiste à plot les gares sur une carte de France.
 
@@ -34,7 +55,7 @@ Nous avons décidé d'enlever les valeurs aberrantes de fréquentation des gares
 
 Enfin, nous avons repris la carte de France avec les points représentant les gares, en ajoutant des couleurs en fonction d'autres caractéristiques comme la population de la commune ou la région.
 
-## 3. Le modèle
+## 3. Le modèle (fichier `main.ipynb`)
 
 Avec ces données, nous commençons à percevoir un lien entre revenu de la commune et la fréquentation des gares, mais est-ce réellement le cas ? Pour répondre à la question, nous utilisons le modèle de régression linéaire des moindres carrés ordinaires. 
 
@@ -42,8 +63,16 @@ En introduisant les variables socio-économiques, du taux de diplôme par commun
 
 Le modèle présente néanmoins des failles. Il existe d'autres variables qui peuvent avoir un effet sur la fréquentation des gares, telles que la densité de population ou le nombre de train qui passent par jour par exemple. Ces données pourraient êtres estimées mais elles ne le sont pas dans ce projet. Les données de fréquentation des gares sont des données agrégées et cachent les différences au sein des types de trains qui y sont pris (TGV, Intercités, TER). Ce ne sont pas les mêmes personnes qui prennent le TER et le TGV. Il est donc difficile d'en déduire un modèle causal, il faudrait pour cela rajouter des variables. 
 
+# Comment run le projet?
 
-comment utiliser (premiere etape pip install -r "requirements.txt" et apres main.ipynb )
+Ouvrez le terminal et tapez:
+```bash
 
-pip install 
-!pip install pyopenssl --upgrade 
+cd sncf_analysis
+pip install -r requirements.txt
+
+```
+
+Après allez sur `main.ipynb`  et excecutez les cellules, si vous voulez allez sur `INTERM_data_prep.ipynb` pour voir comment ces données on été préparées!!
+
+Merci!
